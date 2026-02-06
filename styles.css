@@ -1,0 +1,52 @@
+/* Coursera Altyazı Çevirmeni - Content Styles */
+
+/* Çevrilen altyazılar için stil */
+[data-translated="true"] {
+  /* Çevrilmiş olduğunu belirten hafif bir vurgu */
+  position: relative;
+}
+
+/* Çeviri sırasında loading durumu */
+[data-translating="true"] {
+  opacity: 0.7;
+}
+
+[data-translating="true"]::after {
+  content: '...';
+  animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: ''; }
+  40% { content: '.'; }
+  60% { content: '..'; }
+  80%, 100% { content: '...'; }
+}
+
+/* Hata durumunda kırmızı alt çizgi */
+[data-translation-error="true"] {
+  border-bottom: 2px dashed #ff6b6b;
+}
+
+/* Coursera caption area için özel stiller */
+.rc-CaptionArea [data-translated="true"],
+.rc-Captions [data-translated="true"],
+[class*="caption"] [data-translated="true"] {
+  /* Türkçe karakterler için font desteği */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+               'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+               'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+/* Transcript bölümü için stiller */
+.rc-Transcript [data-translated="true"],
+[class*="transcript"] [data-translated="true"] {
+  line-height: 1.6;
+}
+
+/* Video.js altyazıları için */
+.vjs-text-track-display [data-translated="true"],
+.vjs-text-track-cue [data-translated="true"] {
+  /* Video altyazıları için okunabilirlik */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}

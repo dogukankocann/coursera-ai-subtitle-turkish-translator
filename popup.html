@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coursera Altyazı Çevirmeni</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --ink: #0f1729;
+      --ink-secondary: #475467;
+      --ink-muted: #98a2b3;
+      --surface: #ffffff;
+      --surface-raised: #f8fafc;
+      --surface-sunken: #f1f5f9;
+      --border: #e2e8f0;
+      --border-subtle: #f1f5f9;
+
+      --gemini-from: #4285f4;
+      --gemini-to: #34a853;
+      --claude-from: #d97706;
+      --claude-to: #ea580c;
+
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-soft: rgba(99, 102, 241, 0.08);
+      --accent-glow: rgba(99, 102, 241, 0.18);
+
+      --success: #10b981;
+      --error: #ef4444;
+      --radius: 14px;
+      --radius-sm: 10px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 20px 48px rgba(15, 23, 42, 0.12);
+    }
+
+    body {
+      width: 380px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(160deg, #f0f4ff 0%, #faf5ff 40%, #fef3f2 100%);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      padding: 12px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(20px);
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      padding: 20px 20px 18px;
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: "";
+      position: absolute;
+      top: -40%;
+      right: -20%;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(129, 140, 248, 0.3) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      backdrop-filter: blur(8px);
+    }
+
+    .brand h1 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, 0.65);
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    /* Toggle */
+    .toggle {
+      position: relative;
+      width: 46px;
+      height: 26px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .toggle input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.25);
+      transition: background 0.25s ease;
+    }
+
+    .toggle-track::before {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .toggle input:checked + .toggle-track {
+      background: var(--success);
+    }
+
+    .toggle input:checked + .toggle-track::before {
+      transform: translateX(20px);
+    }
+
+    /* ── Provider Cards ── */
+    .body {
+      padding: 16px 16px 0;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-muted);
+      margin-bottom: 10px;
+    }
+
+    .provider-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .provider-card {
+      position: relative;
+      padding: 16px 14px;
+      border-radius: var(--radius);
+      border: 2px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+
+    .provider-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .provider-card[data-provider="gemini"]::before {
+      background: linear-gradient(90deg, var(--gemini-from), var(--gemini-to));
+    }
+
+    .provider-card[data-provider="openai"]::before {
+      background: linear-gradient(90deg, var(--claude-from), var(--claude-to));
+    }
+
+    .provider-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .provider-card.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .provider-card.active::before {
+      opacity: 1;
+    }
+
+    .provider-card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .provider-card[data-provider="gemini"] .provider-card-icon {
+      background: linear-gradient(135deg, rgba(66, 133, 244, 0.12), rgba(52, 168, 83, 0.12));
+      color: var(--gemini-from);
+    }
+
+    .provider-card[data-provider="openai"] .provider-card-icon {
+      background: linear-gradient(135deg, rgba(16, 163, 127, 0.12), rgba(16, 163, 127, 0.12));
+      color: #10a37f;
+    }
+
+    .provider-card-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .provider-card-model {
+      font-size: 11.5px;
+      color: var(--ink-muted);
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .provider-card .check {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: none;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .provider-card.active .check {
+      display: grid;
+    }
+
+    /* ── Form ── */
+    .divider {
+      height: 1px;
+      background: var(--border-subtle);
+      margin: 16px 0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field-full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    input[type="password"],
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    select {
+      appearance: none;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%2398a2b3' d='M7 10 2.5 4.5h9z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 30px;
+    }
+
+    .api-key-wrap {
+      position: relative;
+    }
+
+    .api-key-wrap input {
+      padding-right: 38px;
+    }
+
+    .eye-btn {
+      position: absolute;
+      top: 50%;
+      right: 6px;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--ink-muted);
+      cursor: pointer;
+      font-size: 14px;
+      display: grid;
+      place-items: center;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .eye-btn:hover {
+      background: var(--surface-sunken);
+      color: var(--accent);
+    }
+
+    /* ── Option Row ── */
+    .option-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius);
+      background: var(--surface-raised);
+      margin-bottom: 12px;
+    }
+
+    .option-row .toggle {
+      width: 42px;
+      height: 24px;
+    }
+
+    .option-row .toggle-track::before {
+      width: 18px;
+      height: 18px;
+    }
+
+    .option-row .toggle input:checked + .toggle-track::before {
+      transform: translateX(18px);
+    }
+
+    .option-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .option-hint {
+      font-size: 11px;
+      color: var(--ink-muted);
+      margin-top: 1px;
+    }
+
+    /* ── Actions ── */
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 4px 0 16px;
+    }
+
+    .btn {
+      height: 42px;
+      border: 0;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-ghost {
+      background: var(--surface-sunken);
+      color: var(--ink-secondary);
+    }
+
+    .btn-ghost:hover {
+      background: #e2e8f0;
+    }
+
+    /* ── Status ── */
+    .status {
+      display: none;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 12px;
+      animation: slideIn 0.25s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .status.success {
+      display: block;
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+    }
+
+    .status.error {
+      display: block;
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    .status.info {
+      display: block;
+      background: #eef2ff;
+      color: #4338ca;
+      border: 1px solid #c7d2fe;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 10px 16px 14px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--ink-muted);
+      line-height: 1.5;
+    }
+
+    .footer a {
+      color: var(--accent);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <main class="card">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-row">
+          <div class="brand">
+            <div class="brand-icon">TR</div>
+            <div>
+              <h1>Altyazı Çevirmeni</h1>
+              <p class="brand-sub">Coursera videoları için canlı çeviri</p>
+            </div>
+          </div>
+          <label class="toggle" title="Çeviriyi aç/kapat">
+            <input type="checkbox" id="enableToggle" checked>
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </header>
+
+      <div class="body">
+        <!-- Provider Selection -->
+        <div class="section-label">Yapay Zeka Motoru</div>
+        <div class="provider-grid">
+          <div class="provider-card" data-provider="gemini">
+            <span class="check">✓</span>
+            <div class="provider-card-icon">✦</div>
+            <div class="provider-card-name">Google Gemini</div>
+            <div class="provider-card-model" id="geminiModelLabel">gemini-3.5-flash</div>
+          </div>
+          <div class="provider-card" data-provider="openai">
+            <span class="check">✓</span>
+            <div class="provider-card-icon">◈</div>
+            <div class="provider-card-name">OpenAI</div>
+            <div class="provider-card-model" id="openaiModelLabel">gpt-4o-mini</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- API Settings -->
+        <div class="form-grid">
+          <div class="field">
+            <label for="modelInput">Model</label>
+            <input type="text" id="modelInput" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="temperatureInput">Sıcaklık</label>
+            <input type="number" id="temperatureInput" min="0" max="2" step="0.1">
+          </div>
+          <div class="field field-full">
+            <label for="baseUrlInput">API URL (Base URL - İsteğe Bağlı)</label>
+            <input type="text" id="baseUrlInput" placeholder="Varsayılan API adresi kullanılır" spellcheck="false">
+          </div>
+          <div class="field field-full">
+            <label for="apiKey">API Anahtarı</label>
+            <div class="api-key-wrap">
+              <input type="password" id="apiKey" spellcheck="false" autocomplete="off">
+              <button class="eye-btn" id="toggleVisibility" type="button" title="Göster/Gizle">👁</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Translation Settings -->
+        <div class="section-label">Çeviri Ayarları</div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="targetLanguage">Hedef Dil</label>
+            <select id="targetLanguage">
+              <option value="Türkçe">Türkçe</option>
+              <option value="İngilizce">İngilizce</option>
+              <option value="Almanca">Almanca</option>
+              <option value="Fransızca">Fransızca</option>
+              <option value="İspanyolca">İspanyolca</option>
+              <option value="İtalyanca">İtalyanca</option>
+              <option value="Arapça">Arapça</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="translationTone">Üslup</label>
+            <select id="translationTone">
+              <option value="natural">Doğal</option>
+              <option value="technical">Teknik</option>
+              <option value="simple">Basit</option>
+              <option value="literal">Sadık</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div class="option-row">
+          <div>
+            <div class="option-label">Orijinal altyazıyı gizle</div>
+            <div class="option-hint">Sadece çevrilmiş altyazı görünsün</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="hideOriginalToggle" checked>
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label for="captionSize">Altyazı Boyutu</label>
+          <select id="captionSize">
+            <option value="16">Küçük</option>
+            <option value="18">Normal</option>
+            <option value="20">Büyük</option>
+            <option value="22">Çok büyük</option>
+          </select>
+        </div>
+
+        <!-- Status -->
+        <div id="status" class="status"></div>
+
+        <!-- Actions -->
+        <div class="actions">
+          <button class="btn btn-primary" id="saveBtn" type="button">💾 Kaydet</button>
+          <button class="btn btn-ghost" id="clearCacheBtn" type="button">🗑 Önbellek Temizle</button>
+        </div>
+      </div>
+
+      <div class="footer">
+        API anahtarları sadece Chrome sync storage içinde saklanır.
+        <br>
+        <a id="apiKeyLink" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer">API key al →</a>
+      </div>
+    </main>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
